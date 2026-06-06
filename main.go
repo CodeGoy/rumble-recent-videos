@@ -112,54 +112,49 @@ func (s *Server) start() {
 	mux.HandleFunc("/api/{type}/{un}", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("api access from: %s\n", r.RemoteAddr)
 		tp := r.PathValue("type")
-		switch tp {
-		case "c":
-			break
-		case "user":
-			break
-		default:
-			fmt.Printf("failed api access from: %s\n", r.RemoteAddr)
-			clientIP := extractIP(r.RemoteAddr)
-			banManager.Ban(clientIP)
-			return
-		}
-		un := r.PathValue("un")
-		if un == "" {
-			fmt.Printf("failed api access from: %s\n", r.RemoteAddr)
-			clientIP := extractIP(r.RemoteAddr)
-			banManager.Ban(clientIP)
-			return
-		}
-		s.mutex.Lock()
-		if val, ok := s.Access[extractIP(r.RemoteAddr)]; ok {
-			lenVal := len(val)
-			if lenVal == API_QUOTA {
-				now := time.Now()
-				if now.Sub(val[0]) > API_QUOTA_DURATION*API_QUOTA_PEROID {
-					s.Access[extractIP(r.RemoteAddr)] = s.Access[extractIP(r.RemoteAddr)][1:]
-				} else {
-					w.WriteHeader(http.StatusTeapot)
-					w.Write([]byte(fmt.Sprintf("API daily quota met, %v", time.Until(val[0].Add(API_QUOTA_DURATION*API_QUOTA_PEROID)))))
-					s.mutex.Unlock()
-					return
+		if tp == "c" || tp == "user" {
+			un := r.PathValue("un")
+			if un == "" {
+				fmt.Printf("failed api access from: %s\n", r.RemoteAddr)
+				clientIP := extractIP(r.RemoteAddr)
+				banManager.Ban(clientIP)
+				return
+			}
+			s.mutex.Lock()
+			if val, ok := s.Access[extractIP(r.RemoteAddr)]; ok {
+				lenVal := len(val)
+				if lenVal == API_QUOTA {
+					now := time.Now()
+					if now.Sub(val[0]) > API_QUOTA_DURATION*API_QUOTA_PEROID {
+						s.Access[extractIP(r.RemoteAddr)] = s.Access[extractIP(r.RemoteAddr)][1:]
+					} else {
+						w.WriteHeader(http.StatusTeapot)
+						w.Write([]byte(fmt.Sprintf("API daily quota met, %v", time.Until(val[0].Add(API_QUOTA_DURATION*API_QUOTA_PEROID)))))
+						s.mutex.Unlock()
+						return
+					}
 				}
 			}
-		}
-		s.Access[extractIP(r.RemoteAddr)] = append(s.Access[extractIP(r.RemoteAddr)], time.Now())
-		s.mutex.Unlock()
-		elements, err := rumbleGet(fmt.Sprintf("https://rumble.com/%s/%s", tp, un))
-		if err != nil {
-			log.Printf("Failed to get rumble: %v\n", err)
-		}
-		output, err := json.MarshalIndent(elements, "", "  ")
-		if err != nil {
-			log.Fatalf("Failed to marshal json: %v\n", err)
-		}
-		if _, err := w.Write(output); err != nil {
-			log.Printf("Failed to write response: %v\n", err)
+			s.Access[extractIP(r.RemoteAddr)] = append(s.Access[extractIP(r.RemoteAddr)], time.Now())
+			s.mutex.Unlock()
+			elements, err := rumbleGet(fmt.Sprintf("https://rumble.com/%s/%s", tp, un))
+			if err != nil {
+				log.Printf("Failed to get rumble: %v\n", err)
+			}
+			output, err := json.MarshalIndent(elements, "", "  ")
+			if err != nil {
+				log.Fatalf("Failed to marshal json: %v\n", err)
+			}
+			if _, err := w.Write(output); err != nil {
+				log.Printf("Failed to write response: %v\n", err)
+			}
+		} else {
+			fmt.Printf("failed api access from: %s\n", r.RemoteAddr)
+			clientIP := extractIP(r.RemoteAddr)
+			banManager.Ban(clientIP)
+			return
 		}
 	})
-
 	server := &http.Server{
 		Addr:    ":" + s.port,
 		Handler: mux,
