@@ -41,7 +41,6 @@ type Server struct {
 	port   string
 	Access map[string][]time.Time
 	mutex  sync.Mutex
-	client *http.Client
 }
 
 type BanManager struct {
@@ -194,9 +193,6 @@ func rumbleGet(url string) (ExtractedElement, error) {
 func main() {
 	s := &Server{
 		Access: make(map[string][]time.Time),
-		client: &http.Client{
-			Transport: &http.Transport{},
-		},
 	}
 	flag.StringVar(&s.port, "port", "8080", "port to serve on")
 	flag.Parse()
