@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Rumble API Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            --primary: #ff0000;
+            --primary-dark: #3700b3;
+            --primary-light: #ff0000;
+            --background: #000000;
+            --surface: #525252;
+            --text-primary: #ffffff;
+            --text-secondary: #16a600;
+            --border: #ff0000;
+            --code-bg: #263238;
+            --code-text: #eceff1;
+            --accent: #03dac6;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+        }
+        header {
+            background: var(--primary);
+            color: #fff;
+            padding: 16px 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+        header p {
+            margin: 4px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        main {
+            max-width: 960px;
+            margin: 24px auto;
+            padding: 0 16px 32px;
+        }
+        .card {
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .card h3 {
+            margin-top: 16px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            background: #fafafa;
+        }
+        .chip--method {
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .chip--get {
+            color: var(--primary-dark);
+            border-color: var(--primary-light);
+            background: #ede7f6;
+        }
+        .endpoint {
+            border-left: 4px solid var(--primary);
+            padding-left: 12px;
+            margin: 12px 0;
+        }
+        .endpoint-path {
+            font-family: "Roboto Mono", Menlo, Consolas, monospace;
+            font-size: 0.95rem;
+        }
+        .endpoint-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-secondary);
+        }
+        pre {
+            margin: 0;
+            padding: 12px 14px;
+            border-radius: 6px;
+            background: var(--code-bg);
+            color: var(--code-text);
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+        code {
+            font-family: "Roboto Mono", Menlo, Consolas, monospace;
+        }
+        .code-block {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #000;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .footer-note {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 16px;
+        }
+        @media (max-width: 600px) {
+            .card {
+                padding: 16px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Rumble-API</h1>
+    <p>recent videos API endpoint documentation</p>
+</header>
+<main>
+    <section class="card">
+        <h2>Overview</h2>
+        <p>
+            Get recent videos from a rumble user or channel.
+        </p>
+        <div class="section-title">Base URL</div>
+        <p class="endpoint-path">
+            <code>http://{{ .Host }}:8080/</code>
+        </p>
+        <div class="section-title">Root endpoint</div>
+        <div class="endpoint">
+            <span class="chip chip--method chip--get">GET</span>
+            <span class="endpoint-path"><code>/</code></span>
+            <div class="endpoint-desc">
+                Catch all for scripts
+            </div>
+        </div>
+        <div class="code-block">
+            <div class="badge">Example response</div>
+            <pre><code>Instant IP ban, catch-all</code></pre>
+        </div>
+        <p class="footer-note">
+            Note: All requests without a valid endpoint and failed API calls, get IP banned
+        </p>
+    </section>
+    <section class="card">
+        <h2>API</h2>
+        <p>
+            API endpoint: Some users are listed as users, and some are listed as channels, the API syntax can be copied from URL <br>
+        </p>
+        <div class="code-block">
+            <div class="badge">The Green part of URL is the direct API syntax</div>
+            <pre><code>
+https://rumble.com/<span style="color:lime;">c/bjornandreasbullhansen</span>
+            </code></pre>
+        </div>
+
+        <div class="section-title">Base URI</div>
+        <p class="endpoint-path">
+            <code>http://{{ .Host }}:8080/api/{type}/{un}</code>
+        </p>
+        <div class="section-title">API endpoint</div>
+        <div class="endpoint">
+            <span class="chip chip--method chip--get">GET</span>
+            <span class="endpoint-path"><code>/api/{type}/{un}</code></span>
+            <div class="endpoint-desc">
+
+            </div>
+        </div>
+        <div class="code-block">
+            <div class="badge">Example response</div>
+            <pre><code>GET: /api/c/bjornandreasbullhansen
+RESPONSE:
+[
+ {
+    "imageUrl": "https://hugh.cdn.rumble.cloud/video/fwe2/13/s8/1/C/c/P/q/CcPqA.OvCc-small-Youre-Not-Civilized.-Youre-..jpg",
+    "videoUrl": "https://rumble.com/v7aaxzw-youre-not-civilized.-youre-domesticated..html?e9s=src_v1_ucp_a",
+    "time": "11 days ago・507 views",
+    "desc": "You're Not Civilized. You're Domesticated."
+  },
+  {
+    "imageUrl": "https://hugh.cdn.rumble.cloud/video/fww1/db/s8/1/Q/y/W/p/QyWpA.OvCc-small-Why-Are-Men-Not-Having-Frie..jpg",
+    "videoUrl": "https://rumble.com/v7a5yy2-why-are-men-not-having-friends-anymore.html?e9s=src_v1_ucp_a",
+    "time": "13 days ago・725 views",
+    "desc": "Why Are Men Not Having Friends Anymore?"
+  }
+]</code></pre>
+        </div>
+        <p class="footer-note">
+            I Was Bored
+        </p>
+    </section>
+</main>
+</body>
+</html>
