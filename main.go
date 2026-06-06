@@ -17,10 +17,10 @@ import (
 
 const (
 	HOST               = "example.com"
-	API_QUOTA          = 4
-	API_QUOTA_PEROID   = 1
+	API_QUOTA          = 2
+	API_QUOTA_PEROID   = 24
 	API_QUOTA_DURATION = time.Hour
-	BAN_MASSAGE        = "Welcome to my API Server, You have been banned for improper use. Reconnections are blocked for over 9000 hours. Better Luck Next Time!!!! TODO: add ban timer ...\n"
+	BAN_MASSAGE        = "You have been banned for 24 hours. Better Luck Next Time!!!!\n"
 )
 
 var (
@@ -41,6 +41,7 @@ type Server struct {
 	port   string
 	Access map[string][]time.Time
 	mutex  sync.Mutex
+	client *http.Client
 }
 
 type BanManager struct {
@@ -193,6 +194,9 @@ func rumbleGet(url string) (ExtractedElement, error) {
 func main() {
 	s := &Server{
 		Access: make(map[string][]time.Time),
+		client: &http.Client{
+			Transport: &http.Transport{},
+		},
 	}
 	flag.StringVar(&s.port, "port", "8080", "port to serve on")
 	flag.Parse()
