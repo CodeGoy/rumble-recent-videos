@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -28,6 +29,8 @@ var (
 	docsHtml []byte
 	//go:embed extractor.js
 	jsCode string
+	//go:embed html/favicon.png
+	favicon []byte
 )
 
 type ExtractedElement []struct {
@@ -77,7 +80,21 @@ func (s *Server) start() {
 	banManager := NewBanManager()
 	mux := http.NewServeMux()
 	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusTeapot)
+		referer := r.Referer()
+		parsedUrl, err := url.Parse(referer)
+		if err != nil || parsedUrl.Path == "" {
+			fmt.Println("Invalid or empty referer")
+			return
+		}
+		path := parsedUrl.Path
+		if path == "/docs" || path == "/docsapi" {
+			w.Header().Set("Content-Type", "image/x-icon")
+			if _, err := w.Write(favicon); err != nil {
+				log.Printf("Error writing favicon: %s", err)
+			}
+		} else {
+			s.ban(w, r, banManager, "Reason: getting favicon from unknown path")
+		}
 	})
 	mux.HandleFunc("/.well-known/appspecific/com.chrome.devtools.json", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
@@ -90,10 +107,7 @@ func (s *Server) start() {
 		fmt.Printf("Protocol: %s\n", r.Proto)
 		fmt.Printf("Method: %s\n", r.Method)
 		fmt.Printf("URL: %s\n", r.URL.String())
-		clientIP := extractIP(r.RemoteAddr)
-		banManager.Ban(clientIP)
-		w.WriteHeader(http.StatusTeapot)
-		w.Write([]byte(BAN_MASSAGE))
+		s.ban(w, r, banManager, "Reason: visiting unknown endpoint")
 	})
 	mux.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("docs access from: %s\n", r.RemoteAddr)
@@ -116,8 +130,7 @@ func (s *Server) start() {
 			un := r.PathValue("un")
 			if un == "" {
 				fmt.Printf("failed api access from: %s\n", r.RemoteAddr)
-				clientIP := extractIP(r.RemoteAddr)
-				banManager.Ban(clientIP)
+				s.ban(w, r, banManager, "Reason: missing api arg")
 				return
 			}
 			s.mutex.Lock()
@@ -150,8 +163,7 @@ func (s *Server) start() {
 			}
 		} else {
 			fmt.Printf("failed api access from: %s\n", r.RemoteAddr)
-			clientIP := extractIP(r.RemoteAddr)
-			banManager.Ban(clientIP)
+			s.ban(w, r, banManager, "Reason: missing api arg")
 			return
 		}
 	})
@@ -170,6 +182,13 @@ func (s *Server) start() {
 	if err := server.ListenAndServe(); err != nil {
 		log.Printf("Server error: %v", err)
 	}
+}
+
+func (s *Server) ban(w http.ResponseWriter, r *http.Request, b *BanManager, reason string) {
+	clientIP := extractIP(r.RemoteAddr)
+	b.Ban(clientIP)
+	w.WriteHeader(http.StatusTeapot)
+	w.Write([]byte(BAN_MASSAGE + reason))
 }
 
 func rumbleGet(url string) (ExtractedElement, error) {
